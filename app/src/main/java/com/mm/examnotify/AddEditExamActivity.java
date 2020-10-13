@@ -4,6 +4,8 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -20,7 +22,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public class AddEditExamActivity extends AppCompatActivity {
     public static final String EXTRA_EXAM_ID =
@@ -146,25 +151,48 @@ public class AddEditExamActivity extends AppCompatActivity {
     }
 
     private void handleTimeButton() {
-        Calendar calendar = Calendar.getInstance();
-        int HOUR = calendar.get(Calendar.HOUR);
-        int MINUTE = calendar.get(Calendar.MINUTE);
-        boolean is24HourFormat = DateFormat.is24HourFormat(this);
 
-        TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+        TimePickerDialog timePickerDialog = new TimePickerDialog(this, android.R.style.Theme_Holo_Light_Dialog_MinWidth, new TimePickerDialog.OnTimeSetListener() {
             @Override
-            public void onTimeSet(TimePicker timePicker, int hour, int minute) {
-                Log.i(TAG, "onTimeSet: " + hour + minute);
-                Calendar calendar1 = Calendar.getInstance();
-                calendar1.set(Calendar.HOUR, hour);
-                calendar1.set(Calendar.MINUTE, minute);
-                // zegar jest 12 godzinny, zmienic to na 24
-                String dateText = DateFormat.format("hh:mm", calendar1).toString();
-                textViewExamTime.setText(dateText);
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                int HOUR, MINUTE;
+                HOUR = hourOfDay;
+                MINUTE = minute;
+                String time = HOUR + ":" + MINUTE;
+
+                SimpleDateFormat f24Hours = new SimpleDateFormat("HH:mm");
+                try {
+                    Date date = f24Hours.parse(time);
+                    textViewExamTime.setText(f24Hours.format(date));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+
             }
-        }, HOUR, MINUTE, is24HourFormat);
-
+        },12,0,true);
+        timePickerDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         timePickerDialog.show();
-
+//        Calendar calendar = Calendar.getInstance();
+//        int HOUR = calendar.get(Calendar.HOUR);
+//        int MINUTE = calendar.get(Calendar.MINUTE);
+//        boolean is24HourFormat = DateFormat.is24HourFormat(this);
+//
+//        TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+//            @Override
+//            public void onTimeSet(TimePicker timePicker, int hour, int minute) {
+//                Log.i(TAG, "onTimeSet: " + hour + minute);
+//                Calendar calendar1 = Calendar.getInstance();
+//                calendar1.set(Calendar.HOUR, hour);
+//                calendar1.set(Calendar.MINUTE, minute);
+//                // zegar jest 12 godzinny, zmienic to na 24
+//                String dateText = DateFormat.format("HH:mm", calendar1).toString();
+//                textViewExamTime.setText(dateText);
+//            }
+//        }, HOUR, MINUTE, true);
+//
+//        timePickerDialog.updateTime(HOUR,MINUTE);
+//        timePickerDialog.show();
+//
     }
 }
