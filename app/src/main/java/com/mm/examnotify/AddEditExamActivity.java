@@ -1,6 +1,8 @@
 package com.mm.examnotify;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 
@@ -28,6 +30,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class AddEditExamActivity extends AppCompatActivity {
+    //private int notificationId = 1;
     public static final String EXTRA_EXAM_ID =
             "com.mm.examnotify.EXTRA_EXAM_ID";
     public static final String EXTRA_EXAM_TITLE =
@@ -84,115 +87,117 @@ public class AddEditExamActivity extends AppCompatActivity {
         });
     }
 
-    private void saveNote() {
-        String exam_title = editTextExamTitle.getText().toString();
-        String exam_date = textViewExamDate.getText().toString();
-        String exam_time = textViewExamTime.getText().toString();
 
-        if (exam_title.trim().isEmpty() || exam_date.trim().isEmpty() || exam_time.trim().isEmpty()) {
-            Toast.makeText(this, "Please insert a title, date and time", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        private void saveNote(){
+            String exam_title = editTextExamTitle.getText().toString();
+            String exam_date = textViewExamDate.getText().toString();
+            String exam_time = textViewExamTime.getText().toString();
 
-        Intent data = new Intent();
-        data.putExtra(EXTRA_EXAM_TITLE, exam_title);
-        data.putExtra(EXTRA_EXAM_DATE, exam_date);
-        data.putExtra(EXTRA_EXAM_TIME, exam_time);
-
-        int id = getIntent().getIntExtra(EXTRA_EXAM_ID, -1);
-        if (id != -1) {
-            data.putExtra(EXTRA_EXAM_ID, id);
-        }
-
-        setResult(RESULT_OK, data);
-        finish();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.add_exam_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.save_exam:
-                saveNote();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    private void handleDateButton() {
-        Calendar calendar = Calendar.getInstance();
-        int YEAR = calendar.get(Calendar.YEAR);
-        int MONTH = calendar.get(Calendar.MONTH);
-        int DATE = calendar.get(Calendar.DATE);
-
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int date) {
-
-                Calendar calendar1 = Calendar.getInstance();
-                calendar1.set(Calendar.YEAR, year);
-                calendar1.set(Calendar.MONTH, month);
-                calendar1.set(Calendar.DATE, date);
-                String dateText = DateFormat.format("d MMM yyyy", calendar1).toString();
-
-                textViewExamDate.setText(dateText);
+            if (exam_title.trim().isEmpty() || exam_date.trim().isEmpty() || exam_time.trim().isEmpty()) {
+                Toast.makeText(this, "Please insert a title, date and time", Toast.LENGTH_SHORT).show();
+                return;
             }
-        }, YEAR, MONTH, DATE);
 
-        datePickerDialog.show();
+            Intent data = new Intent();
+            data.putExtra(EXTRA_EXAM_TITLE, exam_title);
+            data.putExtra(EXTRA_EXAM_DATE, exam_date);
+            data.putExtra(EXTRA_EXAM_TIME, exam_time);
 
-    }
+            int id = getIntent().getIntExtra(EXTRA_EXAM_ID, -1);
+            if (id != -1) {
+                data.putExtra(EXTRA_EXAM_ID, id);
+            }
 
-    private void handleTimeButton() {
+            setResult(RESULT_OK, data);
+            finish();
+        }
 
-        TimePickerDialog timePickerDialog = new TimePickerDialog(this, android.R.style.Theme_Holo_Light_Dialog_MinWidth, new TimePickerDialog.OnTimeSetListener() {
-            @Override
-            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                int HOUR, MINUTE;
-                HOUR = hourOfDay;
-                MINUTE = minute;
-                String time = HOUR + ":" + MINUTE;
+        private void alarm(){
+            Intent intent = new Intent(AddEditExamActivity.this, AlarmReceiver.class);
+            intent.putExtra("notificationId", EXTRA_EXAM_ID);
+            intent.putExtra("message", intent.getStringExtra(EXTRA_EXAM_TITLE));
 
-                SimpleDateFormat f24Hours = new SimpleDateFormat("HH:mm");
-                try {
-                    Date date = f24Hours.parse(time);
-                    textViewExamTime.setText(f24Hours.format(date));
-                } catch (ParseException e) {
-                    e.printStackTrace();
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                    AddEditExamActivity.this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT
+            );
+
+            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+
+            //TODO: Set alarmStartTime based on day and time picked earlier
+            //long alarmStartTime = EXTRA_EXAM_TIME
+
+            //alarmManager.set(AlarmManager.RTC_WAKEUP, alarmStartTime, pendingIntent);
+        }
+
+        @Override
+        public boolean onCreateOptionsMenu (Menu menu){
+            MenuInflater menuInflater = getMenuInflater();
+            menuInflater.inflate(R.menu.add_exam_menu, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onOptionsItemSelected (MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.save_exam:
+                    saveNote();
+                    alarm();
+                    return true;
+                default:
+                    return super.onOptionsItemSelected(item);
+            }
+        }
+
+        private void handleDateButton(){
+            Calendar calendar = Calendar.getInstance();
+            int YEAR = calendar.get(Calendar.YEAR);
+            int MONTH = calendar.get(Calendar.MONTH);
+            int DATE = calendar.get(Calendar.DATE);
+
+            DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker datePicker, int year, int month, int date) {
+
+                    Calendar calendar1 = Calendar.getInstance();
+                    calendar1.set(Calendar.YEAR, year);
+                    calendar1.set(Calendar.MONTH, month);
+                    calendar1.set(Calendar.DATE, date);
+                    String dateText = DateFormat.format("d MMM yyyy", calendar1).toString();
+
+                    textViewExamDate.setText(dateText);
                 }
+            }, YEAR, MONTH, DATE);
+
+            datePickerDialog.show();
+
+        }
+
+        private void handleTimeButton(){
+
+            TimePickerDialog timePickerDialog = new TimePickerDialog(this, android.R.style.Theme_Holo_Light_Dialog_MinWidth, new TimePickerDialog.OnTimeSetListener() {
+                @Override
+                public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                    int HOUR, MINUTE;
+                    HOUR = hourOfDay;
+                    MINUTE = minute;
+                    String time = HOUR + ":" + MINUTE;
+
+                    SimpleDateFormat f24Hours = new SimpleDateFormat("HH:mm");
+                    try {
+                        Date date = f24Hours.parse(time);
+                        textViewExamTime.setText(f24Hours.format(date));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
 
 
-            }
-        },12,0,true);
-        timePickerDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        timePickerDialog.show();
-//        Calendar calendar = Calendar.getInstance();
-//        int HOUR = calendar.get(Calendar.HOUR);
-//        int MINUTE = calendar.get(Calendar.MINUTE);
-//        boolean is24HourFormat = DateFormat.is24HourFormat(this);
-//
-//        TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
-//            @Override
-//            public void onTimeSet(TimePicker timePicker, int hour, int minute) {
-//                Log.i(TAG, "onTimeSet: " + hour + minute);
-//                Calendar calendar1 = Calendar.getInstance();
-//                calendar1.set(Calendar.HOUR, hour);
-//                calendar1.set(Calendar.MINUTE, minute);
-//                // zegar jest 12 godzinny, zmienic to na 24
-//                String dateText = DateFormat.format("HH:mm", calendar1).toString();
-//                textViewExamTime.setText(dateText);
-//            }
-//        }, HOUR, MINUTE, true);
-//
-//        timePickerDialog.updateTime(HOUR,MINUTE);
-//        timePickerDialog.show();
-//
-    }
+                }
+            }, 12, 0, true);
+            timePickerDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            timePickerDialog.show();
+
+        }
 }
+
+
+
