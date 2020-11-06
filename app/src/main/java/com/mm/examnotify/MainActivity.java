@@ -1,7 +1,11 @@
 package com.mm.examnotify;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -48,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
         final ExamAdapter adapter = new ExamAdapter();
         recyclerView.setAdapter(adapter);
-
+        createChannel();
         examViewModel = ViewModelProviders.of(this).get(ExamViewModel.class);
         examViewModel.getAllExams().observe(this, new Observer<List<Exam>>() {
             @Override
@@ -143,7 +147,17 @@ public class MainActivity extends AppCompatActivity {
         menuInflater.inflate(R.menu.main_menu, menu);
         return true;
     }
-
+    public void createChannel(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // For API 26 and above
+            CharSequence channelName = "ePlan Notification";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationManager notificationManager =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationChannel channel = new NotificationChannel(AlarmReceiver.CHANNEL_ID, channelName, importance);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -156,4 +170,3 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
-
