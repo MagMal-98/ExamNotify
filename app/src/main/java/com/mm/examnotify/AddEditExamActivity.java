@@ -4,6 +4,7 @@ import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 
 import android.graphics.Color;
@@ -107,30 +108,42 @@ public class AddEditExamActivity extends AppCompatActivity {
             data.putExtra(EXTRA_EXAM_ID, id);
         }
 
+        Intent intent = new Intent(AddEditExamActivity.this, AlarmReceiver.class);
+        intent.putExtra("notificationId", id);
+        intent.putExtra("message", exam_title);
+        intent.putExtra("date", exam_date);
+        intent.putExtra("hour", exam_time);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(AddEditExamActivity.this, 0,
+                intent, 0);
+        AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        long alarmStartTime = savedDate.getTime();
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmStartTime, pendingIntent);
+
         setResult(RESULT_OK, data);
         finish();
     }
 
-    private void alarm(){
-        Intent intent = new Intent(AddEditExamActivity.this, AlarmReceiver.class);
-        intent.putExtra("notificationId", EXTRA_EXAM_ID);
-        intent.putExtra("message", intent.getStringExtra(EXTRA_EXAM_TITLE));
-
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                AddEditExamActivity.this, 0, intent, 0);
-//        Intent intent = new Intent(this, AlarmReceiver.class);
-//        intent.putExtra("NotificationText", "some text");
-//        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, ledgerId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-//        AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-//        alarmManager.set(AlarmManager.RTC_WAKEUP, 'X seconds in milliseconds', pendingIntent);
-
-        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-
-        //TODO: Set alarmStartTime based on day and time picked earlier
-        long alarmStartTime = savedDate.getTime();//calendar1.getTimeInMillis();
-        long gzd = calendar1.getTimeInMillis();
-        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmStartTime, pendingIntent);
-    }
+//    private void alarm(){
+//        Intent intent = new Intent(AddEditExamActivity.this, AlarmReceiver.class);
+//        intent.putExtra("notificationId", EXTRA_EXAM_ID);
+//        intent.putExtra("message", intent.getStringExtra(EXTRA_EXAM_TITLE));
+//
+//        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+//                AddEditExamActivity.this, 0, intent, 0);
+////        Intent intent = new Intent(this, AlarmReceiver.class);
+////        intent.putExtra("NotificationText", "some text");
+////        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, ledgerId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+////        AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+////        alarmManager.set(AlarmManager.RTC_WAKEUP, 'X seconds in milliseconds', pendingIntent);
+//
+//        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+//
+//        //TODO: Set alarmStartTime based on day and time picked earlier
+//        long alarmStartTime = savedDate.getTime();//calendar1.getTimeInMillis();
+//        long gzd = calendar1.getTimeInMillis();
+//        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmStartTime, pendingIntent);
+//    }
 
     @Override
     public boolean onCreateOptionsMenu (Menu menu){
@@ -143,7 +156,7 @@ public class AddEditExamActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected (MenuItem item) {
         switch (item.getItemId()) {
             case R.id.save_exam:
-                alarm();
+                //alarm();
                 saveNote();
                 return true;
             default:
@@ -186,15 +199,15 @@ public class AddEditExamActivity extends AppCompatActivity {
                 HOUR = hourOfDay;
                 MINUTE = minute;
                 String time = HOUR + ":" + MINUTE;
-                if(calendar1 == null) {
-
-                    calendar1 = Calendar.getInstance();
-                    calendar1.set(Calendar.YEAR, 2020);
-                    calendar1.set(Calendar.MONTH, 10);
-                    calendar1.set(Calendar.DAY_OF_MONTH, 30);
-                }
-                calendar1.set(Calendar.HOUR, HOUR);
-                calendar1.set(Calendar.MINUTE, MINUTE);
+//                if(calendar1 == null) {
+//
+//                    calendar1 = Calendar.getInstance();
+//                    calendar1.set(Calendar.YEAR, 2020);
+//                    calendar1.set(Calendar.MONTH, 10);
+//                    calendar1.set(Calendar.DAY_OF_MONTH, 30);
+//                }
+//                calendar1.set(Calendar.HOUR, HOUR);
+//                calendar1.set(Calendar.MINUTE, MINUTE);
                 savedDate.setHours(HOUR);
                 savedDate.setMinutes(MINUTE);
                 SimpleDateFormat f24Hours = new SimpleDateFormat("HH:mm");
@@ -210,7 +223,6 @@ public class AddEditExamActivity extends AppCompatActivity {
         }, 12, 0, true);
         timePickerDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         timePickerDialog.show();
-
     }
 }
 

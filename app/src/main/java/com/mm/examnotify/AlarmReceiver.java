@@ -19,8 +19,8 @@ public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        //int notificationId = intent.getIntExtra("notificationId", id(notification_id));
-        int m = (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
+        int notificationId = intent.getIntExtra("notificationId", 0);
+        //int m = (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
         String message = intent.getStringExtra("message");
 
         Intent mainIntent = new Intent(context, MainActivity.class);
@@ -37,7 +37,6 @@ public class AlarmReceiver extends BroadcastReceiver {
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);
 
-        notificationManager.notify(m, builder.build());
+        notificationManager.notify(notificationId, builder.build());
     }
-
 }
