@@ -2,21 +2,13 @@ package com.mm.examnotify;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 public class AlarmActivity extends AppCompatActivity {
 
-    private TextView textVievDate;
-    private TextView textVievHour;
+    private TextView textViewDate;
+    private TextView textViewHour;
     private TextView textViewMessage;
 
     @Override
@@ -24,36 +16,20 @@ public class AlarmActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alarm);
 
-        textVievHour = findViewById(R.id.textView_hour);
-        textVievDate = findViewById(R.id.textView_date);
+        textViewHour = findViewById(R.id.textView_hour);
+        textViewDate = findViewById(R.id.textView_date);
         textViewMessage = findViewById(R.id.textView_message);
 
 
-        Calendar calendar = Calendar.getInstance();
-        String currentDate = DateFormat.getDateInstance(DateFormat.LONG).format(calendar.getTime());
-        //SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
-        String currentTime = DateFormat.getTimeInstance(DateFormat.SHORT).format(calendar.getTime());
-                //simpleDateFormat.format(calendar.getTime());
+        Bundle extras = getIntent().getExtras();
+        String msg = extras.getString("message");
+        String time = extras.getString("hour");
+        String day = extras.getString("date");
 
-
-        textVievDate.setText(currentDate);
-        textVievHour.setText(currentTime);
-        textViewMessage.setText("xxxxx");
+        textViewDate.setText(day);
+        textViewHour.setText(time);
+        textViewMessage.setText(msg);
 
 
     }
-//    @Override
-//    protected void onActivityResult ( int requestCode, int resultCode, Intent data){
-//        super.onActivityResult(requestCode, resultCode, data);
-//
-////        int id = data.getIntExtra(AddEditExamActivity.EXTRA_EXAM_ID, -1);
-////
-////        if (id == -1) {
-////            Toast.makeText(this, "Exam notification can't be updated", Toast.LENGTH_SHORT).show();
-////            return;
-////        }
-//
-//
-//
-//    }
 }

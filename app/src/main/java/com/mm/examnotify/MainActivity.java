@@ -1,7 +1,9 @@
 package com.mm.examnotify;
 
+import android.app.AlarmManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -90,6 +92,14 @@ public class MainActivity extends AppCompatActivity {
                         })
                         .show();
                 Toast.makeText(MainActivity.this, "Exam notification deleted", Toast.LENGTH_SHORT).show();
+                //Intent intent = getIntent();
+//                id = intent.getIntExtra("id",id);
+//                mNotificationManager = (NotificationManager)getSystemService(Context
+//                        .NOTIFICATION_SERVICE);
+                AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                Intent intent = new Intent(MainActivity.this, AddEditExamActivity.class);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 1, intent, 0);
+                alarmManager.cancel(pendingIntent);
             }
         }).attachToRecyclerView(recyclerView);
 
@@ -101,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra(AddEditExamActivity.EXTRA_EXAM_TITLE, note.getExam_title());
                 intent.putExtra(AddEditExamActivity.EXTRA_EXAM_DATE, note.getExam_date());
                 intent.putExtra(AddEditExamActivity.EXTRA_EXAM_TIME, note.getExam_time());
+                intent.putExtra(AddEditExamActivity.EXTRA_EXAM_TIME_TO_NOTIFY, note.getExam_timeToNotify());
                 startActivityForResult(intent, EDIT_EXAM_REQUEST);
             }
         });
@@ -114,8 +125,9 @@ public class MainActivity extends AppCompatActivity {
             String exam_title = data.getStringExtra(AddEditExamActivity.EXTRA_EXAM_TITLE);
             String exam_date = data.getStringExtra(AddEditExamActivity.EXTRA_EXAM_DATE);
             String exam_time = data.getStringExtra(AddEditExamActivity.EXTRA_EXAM_TIME);
+            double exam_timeToNotify = data.getDoubleExtra(AddEditExamActivity.EXTRA_EXAM_TIME_TO_NOTIFY, 0.0);
 
-            Exam exam = new Exam(exam_title, exam_date, exam_time);
+            Exam exam = new Exam(exam_title, exam_date, exam_time, exam_timeToNotify);
             examViewModel.insert(exam);
 
             Toast.makeText(this, "Exam notification saved", Toast.LENGTH_SHORT).show();
@@ -130,8 +142,9 @@ public class MainActivity extends AppCompatActivity {
             String exam_title = data.getStringExtra(AddEditExamActivity.EXTRA_EXAM_TITLE);
             String exam_date = data.getStringExtra(AddEditExamActivity.EXTRA_EXAM_DATE);
             String exam_time = data.getStringExtra(AddEditExamActivity.EXTRA_EXAM_TIME);
+            double exam_timeToNotify = data.getDoubleExtra(AddEditExamActivity.EXTRA_EXAM_TIME_TO_NOTIFY, 0.0);
 
-            Exam exam = new Exam(exam_title, exam_date, exam_time);
+            Exam exam = new Exam(exam_title, exam_date, exam_time, exam_timeToNotify);
             exam.setExam_id(id);
             examViewModel.update(exam);
 

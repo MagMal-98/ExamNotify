@@ -30,7 +30,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class AddEditExamActivity extends AppCompatActivity {
-    //private int notificationId = 1;
+
     public static final String EXTRA_EXAM_ID =
             "com.mm.examnotify.EXTRA_EXAM_ID";
     public static final String EXTRA_EXAM_TITLE =
@@ -39,6 +39,8 @@ public class AddEditExamActivity extends AppCompatActivity {
             "com.mm.examnotify.EXTRA_EXAM_DATE";
     public static final String EXTRA_EXAM_TIME =
             "com.mm.examnotify.EXTRA_EXAM_TIME";
+    public static final String EXTRA_EXAM_TIME_TO_NOTIFY =
+            "com.mm.examnotify.EXTRA_EXAM_TIME_TO_NOTIFY";
 
     private EditText editTextExamTitle;
     private TextView textViewExamDate;
@@ -92,35 +94,45 @@ public class AddEditExamActivity extends AppCompatActivity {
         String exam_title = editTextExamTitle.getText().toString();
         String exam_date = textViewExamDate.getText().toString();
         String exam_time = textViewExamTime.getText().toString();
+        long alarmStartTime = savedDate.getTime();
 
         if (exam_title.trim().isEmpty() || exam_date.trim().isEmpty() || exam_time.trim().isEmpty()) {
             Toast.makeText(this, "Please insert a title, date and time", Toast.LENGTH_SHORT).show();
             return;
         }
 
+//        if (alarmStartTime <= 0) {
+//            Toast.makeText(this, "Can't set notification that is earlier than current date and time", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+
         Intent data = new Intent();
         data.putExtra(EXTRA_EXAM_TITLE, exam_title);
         data.putExtra(EXTRA_EXAM_DATE, exam_date);
         data.putExtra(EXTRA_EXAM_TIME, exam_time);
+        data.putExtra(EXTRA_EXAM_TIME_TO_NOTIFY, alarmStartTime);
 
         int id = getIntent().getIntExtra(EXTRA_EXAM_ID, -1);
         if (id != -1) {
             data.putExtra(EXTRA_EXAM_ID, id);
         }
 
+        setResult(RESULT_OK, data);
+
+        int s = data.getIntExtra(EXTRA_EXAM_ID, 0);
+        //int m = (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
         Intent intent = new Intent(AddEditExamActivity.this, AlarmReceiver.class);
-        intent.putExtra("notificationId", id);
+        intent.putExtra("notificationId", s);
         intent.putExtra("message", exam_title);
         intent.putExtra("date", exam_date);
         intent.putExtra("hour", exam_time);
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(AddEditExamActivity.this, 0,
-                intent, 0);
+                intent, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        long alarmStartTime = savedDate.getTime();
-        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmStartTime, pendingIntent);
 
-        setResult(RESULT_OK, data);
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, data.getLongExtra(EXTRA_EXAM_TIME_TO_NOTIFY, 0), pendingIntent);
+
         finish();
     }
 
@@ -139,7 +151,6 @@ public class AddEditExamActivity extends AppCompatActivity {
 //
 //        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 //
-//        //TODO: Set alarmStartTime based on day and time picked earlier
 //        long alarmStartTime = savedDate.getTime();//calendar1.getTimeInMillis();
 //        long gzd = calendar1.getTimeInMillis();
 //        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmStartTime, pendingIntent);

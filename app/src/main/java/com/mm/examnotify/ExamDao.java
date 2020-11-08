@@ -24,6 +24,7 @@ public interface ExamDao {
     @Query("DELETE FROM exams_table")
     void deleteAllExams();
 
-    @Query("SELECT * FROM exams_table ORDER BY exam_date, exam_time DESC")
+    //@Query("SELECT * FROM exams_table ORDER BY exam_date, exam_time DESC")
+    @Query("SELECT * FROM exams_table ORDER BY exam_timeToNotify ASC")
     LiveData<List<Exam>> getAllExams();
 }
