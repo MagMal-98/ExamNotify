@@ -10,7 +10,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".AlarmActivity"/>
+            android:name=".AlarmActivity"
+            android:theme="@style/AlertTheme"/>
         <activity android:name=".AddEditExamActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>

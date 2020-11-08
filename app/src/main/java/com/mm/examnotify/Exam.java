@@ -15,10 +15,13 @@ public class Exam {
 
     private String exam_time;
 
-    public Exam(String exam_title, String exam_date, String exam_time) {
+    private double exam_timeToNotify;
+
+    public Exam(String exam_title, String exam_date, String exam_time, double exam_timeToNotify) {
         this.exam_title = exam_title;
         this.exam_date = exam_date;
         this.exam_time = exam_time;
+        this.exam_timeToNotify = exam_timeToNotify;
     }
 
     public void setExam_id(int exam_id) {
@@ -39,5 +42,9 @@ public class Exam {
 
     public String getExam_time() {
         return exam_time;
+    }
+
+    public double getExam_timeToNotify(){
+        return exam_timeToNotify;
     }
 }
