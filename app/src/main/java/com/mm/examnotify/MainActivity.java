@@ -92,14 +92,17 @@ public class MainActivity extends AppCompatActivity {
                         })
                         .show();
                 Toast.makeText(MainActivity.this, "Exam notification deleted", Toast.LENGTH_SHORT).show();
-                //Intent intent = getIntent();
-//                id = intent.getIntExtra("id",id);
-//                mNotificationManager = (NotificationManager)getSystemService(Context
-//                        .NOTIFICATION_SERVICE);
+
                 AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                Intent intent = new Intent(MainActivity.this, AddEditExamActivity.class);
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 1, intent, 0);
+                Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
+                Exam examAt = adapter.getExamAt(viewHolder.getAdapterPosition());
+                intent.putExtra("notificationId", examAt.getExam_id());
+                intent.putExtra("message",  examAt.getExam_title());
+                intent.putExtra("date",  examAt.getExam_date());
+                intent.putExtra("hour",  examAt.getExam_time());
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, 0);
                 alarmManager.cancel(pendingIntent);
+
             }
         }).attachToRecyclerView(recyclerView);
 

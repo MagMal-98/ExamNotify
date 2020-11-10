@@ -94,17 +94,30 @@ public class AddEditExamActivity extends AppCompatActivity {
         String exam_title = editTextExamTitle.getText().toString();
         String exam_date = textViewExamDate.getText().toString();
         String exam_time = textViewExamTime.getText().toString();
-        long alarmStartTime = savedDate.getTime();
-
-        if (exam_title.trim().isEmpty() || exam_date.trim().isEmpty() || exam_time.trim().isEmpty()) {
+        long alarmStartTime;
+        if (savedDate == null) {
+            Toast.makeText(this, "Please insert a date and time", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        else{
+            alarmStartTime = savedDate.getTime();
+        }
+        if (exam_title.trim().isEmpty() && savedDate == null) {
             Toast.makeText(this, "Please insert a title, date and time", Toast.LENGTH_SHORT).show();
             return;
         }
-
-//        if (alarmStartTime <= 0) {
-//            Toast.makeText(this, "Can't set notification that is earlier than current date and time", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
+        if (exam_title.trim().isEmpty()) {
+            Toast.makeText(this, "Please insert a title", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (exam_date.trim().isEmpty() && savedDate != null) {
+            Toast.makeText(this, "Please insert a date", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (exam_time.trim().isEmpty() && savedDate != null) {
+            Toast.makeText(this, "Please insert time", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         Intent data = new Intent();
         data.putExtra(EXTRA_EXAM_TITLE, exam_title);
@@ -112,49 +125,32 @@ public class AddEditExamActivity extends AppCompatActivity {
         data.putExtra(EXTRA_EXAM_TIME, exam_time);
         data.putExtra(EXTRA_EXAM_TIME_TO_NOTIFY, alarmStartTime);
 
+        int m = (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
         int id = getIntent().getIntExtra(EXTRA_EXAM_ID, -1);
         if (id != -1) {
             data.putExtra(EXTRA_EXAM_ID, id);
+        }
+        else{
+            data.putExtra(EXTRA_EXAM_ID, m);
         }
 
         setResult(RESULT_OK, data);
 
         int s = data.getIntExtra(EXTRA_EXAM_ID, 0);
-        //int m = (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
-        Intent intent = new Intent(AddEditExamActivity.this, AlarmReceiver.class);
+        AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+
+        Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
         intent.putExtra("notificationId", s);
         intent.putExtra("message", exam_title);
         intent.putExtra("date", exam_date);
         intent.putExtra("hour", exam_time);
 
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(AddEditExamActivity.this, 0,
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, data.getLongExtra(EXTRA_EXAM_TIME_TO_NOTIFY, 0), pendingIntent);
 
         finish();
     }
-
-//    private void alarm(){
-//        Intent intent = new Intent(AddEditExamActivity.this, AlarmReceiver.class);
-//        intent.putExtra("notificationId", EXTRA_EXAM_ID);
-//        intent.putExtra("message", intent.getStringExtra(EXTRA_EXAM_TITLE));
-//
-//        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-//                AddEditExamActivity.this, 0, intent, 0);
-////        Intent intent = new Intent(this, AlarmReceiver.class);
-////        intent.putExtra("NotificationText", "some text");
-////        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, ledgerId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-////        AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-////        alarmManager.set(AlarmManager.RTC_WAKEUP, 'X seconds in milliseconds', pendingIntent);
-//
-//        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-//
-//        long alarmStartTime = savedDate.getTime();//calendar1.getTimeInMillis();
-//        long gzd = calendar1.getTimeInMillis();
-//        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmStartTime, pendingIntent);
-//    }
 
     @Override
     public boolean onCreateOptionsMenu (Menu menu){
@@ -194,9 +190,11 @@ public class AddEditExamActivity extends AppCompatActivity {
                 String dateText = DateFormat.format("d MMM yyyy", calendar1).toString();
 
                 textViewExamDate.setText(dateText);
+
             }
         }, YEAR, MONTH, DATE);
 
+        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
         datePickerDialog.show();
 
     }
@@ -210,6 +208,7 @@ public class AddEditExamActivity extends AppCompatActivity {
                 HOUR = hourOfDay;
                 MINUTE = minute;
                 String time = HOUR + ":" + MINUTE;
+
 //                if(calendar1 == null) {
 //
 //                    calendar1 = Calendar.getInstance();
