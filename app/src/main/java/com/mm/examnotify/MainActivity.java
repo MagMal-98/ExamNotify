@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra("message",  examAt.getExam_title());
                 intent.putExtra("date",  examAt.getExam_date());
                 intent.putExtra("hour",  examAt.getExam_time());
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, 0);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), examAt.getExam_id(), intent, 0);
                 alarmManager.cancel(pendingIntent);
 
             }

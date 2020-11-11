@@ -25,6 +25,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.text.ParseException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -95,6 +96,13 @@ public class AddEditExamActivity extends AppCompatActivity {
         String exam_date = textViewExamDate.getText().toString();
         String exam_time = textViewExamTime.getText().toString();
         long alarmStartTime;
+        long alarmStartTime_edit = 0;
+
+        if(!exam_date.equals("") && !exam_time.equals("") && savedDate == null){
+            Date editDate = stringToDate(exam_date, "dd mm yyyy");
+            Date editTime = stringToDate(exam_time, "HH:mm");
+            alarmStartTime_edit = editDate.getTime() + editTime.getTime();
+        }
         if (savedDate == null) {
             Toast.makeText(this, "Please insert a date and time", Toast.LENGTH_SHORT).show();
             return;
@@ -119,11 +127,16 @@ public class AddEditExamActivity extends AppCompatActivity {
             return;
         }
 
+
+
         Intent data = new Intent();
         data.putExtra(EXTRA_EXAM_TITLE, exam_title);
         data.putExtra(EXTRA_EXAM_DATE, exam_date);
         data.putExtra(EXTRA_EXAM_TIME, exam_time);
-        data.putExtra(EXTRA_EXAM_TIME_TO_NOTIFY, alarmStartTime);
+        if(alarmStartTime_edit == 0){
+            data.putExtra(EXTRA_EXAM_TIME_TO_NOTIFY, alarmStartTime);
+        } else data.putExtra(EXTRA_EXAM_TIME_TO_NOTIFY, alarmStartTime_edit);
+
 
         int m = (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
         int id = getIntent().getIntExtra(EXTRA_EXAM_ID, -1);
@@ -145,7 +158,7 @@ public class AddEditExamActivity extends AppCompatActivity {
         intent.putExtra("date", exam_date);
         intent.putExtra("hour", exam_time);
 
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0,
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), s,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, data.getLongExtra(EXTRA_EXAM_TIME_TO_NOTIFY, 0), pendingIntent);
 
@@ -163,7 +176,6 @@ public class AddEditExamActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected (MenuItem item) {
         switch (item.getItemId()) {
             case R.id.save_exam:
-                //alarm();
                 saveNote();
                 return true;
             default:
@@ -171,7 +183,9 @@ public class AddEditExamActivity extends AppCompatActivity {
         }
     }
     Calendar calendar1;
+    Calendar calendar2;
     Date savedDate;
+
     private void handleDateButton(){
         final Calendar calendar = Calendar.getInstance();
         int YEAR = calendar.get(Calendar.YEAR);
@@ -186,6 +200,12 @@ public class AddEditExamActivity extends AppCompatActivity {
                 calendar1.set(Calendar.YEAR, year);
                 calendar1.set(Calendar.MONTH, month);
                 calendar1.set(Calendar.DAY_OF_MONTH, date);
+
+                if (calendar2 != null){
+                    calendar1.set(Calendar.HOUR_OF_DAY, calendar2.get(Calendar.HOUR_OF_DAY));
+                    calendar1.set(Calendar.MINUTE, calendar2.get(Calendar.MINUTE));
+                }
+
                 savedDate = calendar1.getTime();
                 String dateText = DateFormat.format("d MMM yyyy", calendar1).toString();
 
@@ -209,17 +229,19 @@ public class AddEditExamActivity extends AppCompatActivity {
                 MINUTE = minute;
                 String time = HOUR + ":" + MINUTE;
 
-//                if(calendar1 == null) {
-//
-//                    calendar1 = Calendar.getInstance();
-//                    calendar1.set(Calendar.YEAR, 2020);
-//                    calendar1.set(Calendar.MONTH, 10);
-//                    calendar1.set(Calendar.DAY_OF_MONTH, 30);
-//                }
-//                calendar1.set(Calendar.HOUR, HOUR);
-//                calendar1.set(Calendar.MINUTE, MINUTE);
-                savedDate.setHours(HOUR);
-                savedDate.setMinutes(MINUTE);
+                if(calendar1 == null) {
+                    calendar2 = Calendar.getInstance();
+                    calendar2.set(Calendar.YEAR, 2020);
+                    calendar2.set(Calendar.MONTH, 10);
+                    calendar2.set(Calendar.DAY_OF_MONTH, 30);
+                    calendar2.set(Calendar.HOUR_OF_DAY, HOUR);
+                    calendar2.set(Calendar.MINUTE, MINUTE);
+                } else {
+                    calendar1.set(Calendar.HOUR_OF_DAY, HOUR);
+                    calendar1.set(Calendar.MINUTE, MINUTE);
+                    savedDate = calendar1.getTime();
+                }
+
                 SimpleDateFormat f24Hours = new SimpleDateFormat("HH:mm");
                 try {
                     Date date = f24Hours.parse(time);
@@ -233,6 +255,15 @@ public class AddEditExamActivity extends AppCompatActivity {
         }, 12, 0, true);
         timePickerDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         timePickerDialog.show();
+    }
+
+    private Date stringToDate(String aDate,String aFormat) {
+        if(aDate==null) return null;
+        ParsePosition pos = new ParsePosition(0);
+        SimpleDateFormat simpledateformat = new SimpleDateFormat(aFormat);
+        Date stringDate = simpledateformat.parse(aDate, pos);
+        return stringDate;
+
     }
 }
 
