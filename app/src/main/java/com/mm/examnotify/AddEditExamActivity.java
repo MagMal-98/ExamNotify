@@ -6,7 +6,6 @@ import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
-
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -42,6 +41,8 @@ public class AddEditExamActivity extends AppCompatActivity {
             "com.mm.examnotify.EXTRA_EXAM_TIME";
     public static final String EXTRA_EXAM_TIME_TO_NOTIFY =
             "com.mm.examnotify.EXTRA_EXAM_TIME_TO_NOTIFY";
+    public static final String EXTRA_EXAM_NOTIFICATION_ID =
+            "com.mm.examnotify.EXTRA_EXAM_NOTIFICATION_ID";
 
     private EditText editTextExamTitle;
     private TextView textViewExamDate;
@@ -71,7 +72,8 @@ public class AddEditExamActivity extends AppCompatActivity {
             editTextExamTitle.setText(intent.getStringExtra(EXTRA_EXAM_TITLE));
             textViewExamDate.setText(intent.getStringExtra(EXTRA_EXAM_DATE));
             textViewExamTime.setText(intent.getStringExtra(EXTRA_EXAM_TIME));
-
+            edit_id = intent.getIntExtra(EXTRA_EXAM_ID, -1);
+            edit_notification_id = intent.getIntExtra(EXTRA_EXAM_NOTIFICATION_ID, -1);
         } else {
             setTitle("Add Exam Notification");
         }
@@ -96,21 +98,26 @@ public class AddEditExamActivity extends AppCompatActivity {
         String exam_date = textViewExamDate.getText().toString();
         String exam_time = textViewExamTime.getText().toString();
         long alarmStartTime;
-        long alarmStartTime_edit = 0;
+        long alarmStartTime_edit;
 
-        if(!exam_date.equals("") && !exam_time.equals("") && savedDate == null){
-            Date editDate = stringToDate(exam_date, "dd mm yyyy");
-            Date editTime = stringToDate(exam_time, "HH:mm");
-            alarmStartTime_edit = editDate.getTime() + editTime.getTime();
+        if(!exam_date.isEmpty() && !exam_time.isEmpty() && savedDate == null){
+            editDate = stringToDate(exam_date, "dd MM yyyy");
+            editDate = stringToDate(exam_time, "HH:mm");
+            edit_flag = true;
+            //alarmStartTime_edit = editDate.getTime() + editTime.getTime();
         }
-        if (savedDate == null) {
+        if (savedDate == null && editDate == null) {
             Toast.makeText(this, "Please insert a date and time", Toast.LENGTH_SHORT).show();
             return;
         }
-        else{
-            alarmStartTime = savedDate.getTime();
-        }
-        if (exam_title.trim().isEmpty() && savedDate == null) {
+//        else {
+//            if(savedDate == null){
+//                alarmStartTime_edit = editDate.getTime();
+//            } else{
+//                alarmStartTime = savedDate.getTime();
+//            }
+//        }
+        if (exam_title.trim().isEmpty() && savedDate == null && editDate == null) {
             Toast.makeText(this, "Please insert a title, date and time", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -127,38 +134,52 @@ public class AddEditExamActivity extends AppCompatActivity {
             return;
         }
 
-
-
+        //Intent intent1 = getIntent();
+        //int id = intent1.getIntExtra(EXTRA_EXAM_ID, -1);
         Intent data = new Intent();
+        int m = (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
         data.putExtra(EXTRA_EXAM_TITLE, exam_title);
         data.putExtra(EXTRA_EXAM_DATE, exam_date);
         data.putExtra(EXTRA_EXAM_TIME, exam_time);
-        if(alarmStartTime_edit == 0){
-            data.putExtra(EXTRA_EXAM_TIME_TO_NOTIFY, alarmStartTime);
-        } else data.putExtra(EXTRA_EXAM_TIME_TO_NOTIFY, alarmStartTime_edit);
-
-
-        int m = (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
-        int id = getIntent().getIntExtra(EXTRA_EXAM_ID, -1);
-        if (id != -1) {
-            data.putExtra(EXTRA_EXAM_ID, id);
-        }
-        else{
+        if(editDate == null){
+            data.putExtra(EXTRA_EXAM_TIME_TO_NOTIFY, savedDate.getTime());
             data.putExtra(EXTRA_EXAM_ID, m);
+            data.putExtra(EXTRA_EXAM_NOTIFICATION_ID, m);
+        } else {
+            data.putExtra(EXTRA_EXAM_TIME_TO_NOTIFY, editDate.getTime());
+            data.putExtra(EXTRA_EXAM_ID, edit_id);
+            //data.putExtra(String.valueOf(data.getIntExtra(EXTRA_EXAM_ID, 13)), id);
+            data.putExtra(EXTRA_EXAM_NOTIFICATION_ID, edit_notification_id);
         }
+
+//        if (editDate == null) {
+////            //if (id != -1) {
+////            data.putExtra(EXTRA_EXAM_ID, id);
+////
+////        }
+////        else{
+//            data.putExtra(EXTRA_EXAM_ID, m);
+//            data.putExtra(EXTRA_EXAM_NOTIFICATION_ID, m);
+//        }
+//        else{
+//            data.putExtra(String.valueOf(data.getIntExtra(EXTRA_EXAM_ID, -1)), id);
+//            data.putExtra(String.valueOf(data.getIntExtra(EXTRA_EXAM_NOTIFICATION_ID, -1)), m);
+//        }
 
         setResult(RESULT_OK, data);
 
-        int s = data.getIntExtra(EXTRA_EXAM_ID, 0);
+        //int a;
+        //int s = data.getIntExtra(EXTRA_EXAM_ID, -1);
+        int a = data.getIntExtra(EXTRA_EXAM_NOTIFICATION_ID, -1);
         AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
 
         Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
-        intent.putExtra("notificationId", s);
+        intent.putExtra("notificationId", a);
         intent.putExtra("message", exam_title);
         intent.putExtra("date", exam_date);
         intent.putExtra("hour", exam_time);
 
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), s,
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), a,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, data.getLongExtra(EXTRA_EXAM_TIME_TO_NOTIFY, 0), pendingIntent);
 
@@ -185,6 +206,10 @@ public class AddEditExamActivity extends AppCompatActivity {
     Calendar calendar1;
     Calendar calendar2;
     Date savedDate;
+    Date editDate;
+    int edit_id;
+    int edit_notification_id;
+    boolean edit_flag = false;
 
     private void handleDateButton(){
         final Calendar calendar = Calendar.getInstance();
@@ -206,7 +231,12 @@ public class AddEditExamActivity extends AppCompatActivity {
                     calendar1.set(Calendar.MINUTE, calendar2.get(Calendar.MINUTE));
                 }
 
-                savedDate = calendar1.getTime();
+                if(edit_flag){
+                    editDate = calendar1.getTime();
+                }
+                else{
+                    savedDate = calendar1.getTime();
+                }
                 String dateText = DateFormat.format("d MMM yyyy", calendar1).toString();
 
                 textViewExamDate.setText(dateText);
@@ -239,7 +269,12 @@ public class AddEditExamActivity extends AppCompatActivity {
                 } else {
                     calendar1.set(Calendar.HOUR_OF_DAY, HOUR);
                     calendar1.set(Calendar.MINUTE, MINUTE);
-                    savedDate = calendar1.getTime();
+                    if(edit_flag){
+                        editDate = calendar1.getTime();
+                    }
+                    else{
+                        savedDate = calendar1.getTime();
+                    }
                 }
 
                 SimpleDateFormat f24Hours = new SimpleDateFormat("HH:mm");
@@ -249,7 +284,6 @@ public class AddEditExamActivity extends AppCompatActivity {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-
 
             }
         }, 12, 0, true);
@@ -263,7 +297,6 @@ public class AddEditExamActivity extends AppCompatActivity {
         SimpleDateFormat simpledateformat = new SimpleDateFormat(aFormat);
         Date stringDate = simpledateformat.parse(aDate, pos);
         return stringDate;
-
     }
 }
 

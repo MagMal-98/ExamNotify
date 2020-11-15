@@ -47,7 +47,7 @@ public abstract class ExamDatabase extends RoomDatabase {
             Calendar calendar = Calendar.getInstance();
             String currentDate = DateFormat.getDateInstance(DateFormat.MEDIUM).format(calendar.getTime());
             String currentTime = DateFormat.getTimeInstance(DateFormat.SHORT).format(calendar.getTime());
-            examDao.insert(new Exam("Exam 1", currentDate, currentTime, 0.0));
+            examDao.insert(new Exam("Exam 1", currentDate, currentTime, 0.0, 0));
             return null;
         }
     }

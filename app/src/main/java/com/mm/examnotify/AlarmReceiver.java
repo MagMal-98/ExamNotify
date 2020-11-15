@@ -17,7 +17,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        int m = (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
+        //int m = (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
         int notificationId = intent.getIntExtra("notificationId", 0);
 
         String message = intent.getStringExtra("message");
