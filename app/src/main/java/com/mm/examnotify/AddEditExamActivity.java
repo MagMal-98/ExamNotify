@@ -1,5 +1,6 @@
 package com.mm.examnotify;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
@@ -14,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -63,12 +65,22 @@ public class AddEditExamActivity extends AppCompatActivity {
         buttonExamDate = findViewById(R.id.button_exam_date);
         buttonExamTime = findViewById(R.id.button_exam_time);
 
+        editTextExamTitle.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    hideKeyboard(v);
+                }
+            }
+        });
+
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close);
 
         Intent intent = getIntent();
 
         if (intent.hasExtra(EXTRA_EXAM_ID)) {
             setTitle("Edit Exam Notification");
+            edit_flag = true;
             editTextExamTitle.setText(intent.getStringExtra(EXTRA_EXAM_TITLE));
             textViewExamDate.setText(intent.getStringExtra(EXTRA_EXAM_DATE));
             textViewExamTime.setText(intent.getStringExtra(EXTRA_EXAM_TIME));
@@ -101,9 +113,10 @@ public class AddEditExamActivity extends AppCompatActivity {
         long alarmStartTime_edit;
 
         if(!exam_date.isEmpty() && !exam_time.isEmpty() && savedDate == null){
-            editDate = stringToDate(exam_date, "dd MM yyyy");
-            editDate = stringToDate(exam_time, "HH:mm");
-            edit_flag = true;
+            String edit = exam_date + " " + exam_time;
+//            editDate = stringToDate(exam_date, "d MMM yyyy");
+//            editDate = stringToDate(exam_time, "HH:mm");
+            editDate = stringToDate(edit, "d MMM yyyy HH:mm");
             //alarmStartTime_edit = editDate.getTime() + editTime.getTime();
         }
         if (savedDate == null && editDate == null) {
@@ -297,6 +310,11 @@ public class AddEditExamActivity extends AppCompatActivity {
         SimpleDateFormat simpledateformat = new SimpleDateFormat(aFormat);
         Date stringDate = simpledateformat.parse(aDate, pos);
         return stringDate;
+    }
+
+    public void hideKeyboard(View view) {
+        InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 }
 
